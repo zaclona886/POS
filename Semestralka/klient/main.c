@@ -118,5 +118,5 @@ int main(int argc, char *argv[])
 
 
 
-    //cauky
+    //ahojky
 }
