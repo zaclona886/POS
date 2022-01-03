@@ -59,14 +59,13 @@ int main(int argc, char *argv[])
         bzero(buffer,256);
         fgets(buffer, 255, stdin);
         n = write(sockfd, buffer, strlen(buffer));
+        if (n < 0) {
+            perror("Error writing to socket");
+            return 5;
+        }
         if (buffer[0] == 'q') {
             koniec = true;
             printf("Koniec hry!\n");
-        }
-        if (n < 0)
-        {
-            perror("Error writing to socket");
-            return 5;
         }
 
         // VYPISANIE HRACEJ PLOCHY a
