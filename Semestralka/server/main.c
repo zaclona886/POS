@@ -11,6 +11,7 @@
 #define HRACIA_PLOCHA_VELKOST_X 25
 #define HRACIA_PLOCHA_VELKOST_Y 60
 #define MAX_VELKOST_HADA 100
+#define MAX_POCET_HRIBOV 20
 
 typedef struct clanok{
     int poziciaX;
@@ -26,12 +27,15 @@ typedef struct hrac{
 typedef struct hraciePole{
     char pole[HRACIA_PLOCHA_VELKOST_X][HRACIA_PLOCHA_VELKOST_Y];
     bool hraSkoncila;
+    int pocetHribov;
+    pthread_mutex_t * mutexPocetHribov;
+    pthread_cond_t * pridajHrib;
 } HRACIE_POLE_DATA;
 
 bool posunHada(HRAC_DATA * hracData, HRACIE_POLE_DATA * hraciePoleData){
     int predX = 0;
     int predY = 0;
-    bool zobralKeks = false;
+    bool zobralHrib = false;
     for (int j = 0; j < hracData->velkostHada; ++j) {
         if (j == 0) {
             predX = hracData->clanky_hada[j].poziciaX;
@@ -54,11 +58,15 @@ bool posunHada(HRAC_DATA * hracData, HRACIE_POLE_DATA * hraciePoleData){
                     hracData->clanky_hada[j].poziciaY = hracData->clanky_hada[j].poziciaY + 1;
                     break;
             }
-            //Kontrola zobral keks
+            //Kontrola zobral hrib
             if (hraciePoleData->pole[hracData->clanky_hada[j].poziciaX][hracData->clanky_hada[j].poziciaY] == 'H'){
+                pthread_mutex_lock(hraciePoleData->mutexPocetHribov);
                 hraciePoleData->pole[hracData->clanky_hada[j].poziciaX][hracData->clanky_hada[j].poziciaY] = ' ';
+                hraciePoleData->pocetHribov--;
+                pthread_cond_signal(hraciePoleData->pridajHrib);
+                pthread_mutex_unlock(hraciePoleData->mutexPocetHribov);
                 if (hracData->velkostHada < MAX_VELKOST_HADA){
-                    zobralKeks = true;
+                    zobralHrib = true;
                 }
             }
             //Kontrola ci nenarazil do steny
@@ -84,7 +92,7 @@ bool posunHada(HRAC_DATA * hracData, HRACIE_POLE_DATA * hraciePoleData){
         }
     }
     //Kontrola zvacsenia
-    if (zobralKeks){
+    if (zobralHrib){
         hracData->velkostHada++;
         hracData->clanky_hada[hracData->velkostHada-1].poziciaX = predX;
         hracData->clanky_hada[hracData->velkostHada-1].poziciaY = predY;
@@ -127,20 +135,26 @@ void vykreslenieHracejPlochy(HRACIE_POLE_DATA * hraciePoleData){
     printf("\n");
 }
 
-void * generovanieKeksovF(void * hraciePole){
+void * generovanieHribovF(void * hraciePole){
     HRACIE_POLE_DATA * dataP = hraciePole;
     printf("Zacalo sa generovanie kolacov\n");
     while (!dataP->hraSkoncila){
         sleep(5);
         bool vygeneroval = false;
+        pthread_mutex_lock(dataP->mutexPocetHribov);
+        while (dataP->pocetHribov >= MAX_POCET_HRIBOV){
+            pthread_cond_wait(dataP->pridajHrib,dataP->mutexPocetHribov);
+        }
         while (!vygeneroval) {
             int x = rand() % HRACIA_PLOCHA_VELKOST_X;
             int y = rand() % HRACIA_PLOCHA_VELKOST_Y;
             if (dataP->pole[x][y] == ' ') {
                 dataP->pole[x][y] = 'H';
                 vygeneroval = true;
+                dataP->pocetHribov++;
             }
         }
+        pthread_mutex_unlock(dataP->mutexPocetHribov);
     }
     printf("Skoncilo sa generovanie kolacov\n");
     pthread_exit(NULL);
@@ -190,6 +204,11 @@ int main(int argc, char *argv[])
     // VYTVORENIE HRACEJ PLOCHY
     HRACIE_POLE_DATA hraciePoleData;
     hraciePoleData.hraSkoncila = false;
+    hraciePoleData.pocetHribov = 0;
+    pthread_mutex_t mutexPocetHribov = PTHREAD_MUTEX_INITIALIZER;
+    pthread_cond_t pridajHrib = PTHREAD_COND_INITIALIZER;
+    hraciePoleData.mutexPocetHribov = &mutexPocetHribov;
+    hraciePoleData.pridajHrib = &pridajHrib;
     for (int i = 0; i < HRACIA_PLOCHA_VELKOST_X; ++i) {
         for (int j = 0; j < HRACIA_PLOCHA_VELKOST_Y; ++j) {
             hraciePoleData.pole[i][j] = ' ';
@@ -210,9 +229,9 @@ int main(int argc, char *argv[])
         hraciePoleData.pole[hrac1.clanky_hada[j].poziciaX]
             [hrac1.clanky_hada[j].poziciaY] = 'X';
     }
-    //Vytvorenie vlakna na generovanie keksov
-    pthread_t generovanieKeksov;
-    pthread_create(&generovanieKeksov,NULL,generovanieKeksovF,&hraciePoleData);
+    //Vytvorenie vlakna na generovanie hribov
+    pthread_t generovanieHribov;
+    pthread_create(&generovanieHribov,NULL,generovanieHribovF,&hraciePoleData);
     // ZACIATOK CYKLU
     while (!hraciePoleData.hraSkoncila) {
        //Nacitanie zmeny smeru
@@ -283,7 +302,9 @@ int main(int argc, char *argv[])
 
     }
 
-    pthread_join(generovanieKeksov,NULL);
+    pthread_mutex_destroy(&mutexPocetHribov);
+    pthread_cond_destroy(&pridajHrib);
+    pthread_join(generovanieHribov,NULL);
     close(newsockfd);
     close(sockfd);
 
