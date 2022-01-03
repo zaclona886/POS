@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
         }
 
         if (buffer[0] == '1') {
-            // VYPISANIE HRACEJ PLOCHY a
+            // VYPISANIE HRACEJ PLOCHY
             char pole[HRACIA_PLOCHA_VELKOST_X][HRACIA_PLOCHA_VELKOST_Y];
             n = read(sockfd, pole, sizeof (pole));
             if (n < 0)
@@ -115,4 +115,5 @@ int main(int argc, char *argv[])
 
     close(sockfd);
     return 0;
+    //SkusaOKFJOPIdfhjoasdnfkjasdnbfkujasdhfuiohadfiuahsdfijkhansdfljk
 }
