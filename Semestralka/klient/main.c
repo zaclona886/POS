@@ -68,39 +68,48 @@ int main(int argc, char *argv[])
             printf("Koniec hry!\n");
         }
 
-        // VYPISANIE HRACEJ PLOCHY a
-        char pole[HRACIA_PLOCHA_VELKOST_X][HRACIA_PLOCHA_VELKOST_Y];
-        n = read(sockfd, pole, sizeof(pole));
+        // VYPISANIE HRACEJ PLOCHY
+        bzero(buffer,256);
+        n = read(sockfd,buffer,255);
+        printf("%s\n",buffer);
         if (n < 0) {
             perror("Error reading from socket");
             return 6;
         }
-        for (int j = 0; j < HRACIA_PLOCHA_VELKOST_Y + 2; ++j) {
-            printf("-");
-        }
-        printf("\n");
-        for (int i = 0; i < HRACIA_PLOCHA_VELKOST_X; ++i) {
-            for (int j = 0; j < HRACIA_PLOCHA_VELKOST_Y; ++j) {
-                if (j == 0) {
-                    printf("|");
-                }
-                printf("%c", pole[i][j]);
-                if (j == HRACIA_PLOCHA_VELKOST_Y - 1) {
-                    printf("|");
-                }
+
+        if (buffer[0] == 'f') {
+            char pole[HRACIA_PLOCHA_VELKOST_X][HRACIA_PLOCHA_VELKOST_Y];
+            n = read(sockfd, pole, sizeof(pole));
+            if (n < 0) {
+                perror("Error reading from socket");
+                return 6;
+            }
+            for (int j = 0; j < HRACIA_PLOCHA_VELKOST_Y + 2; ++j) {
+                printf("-");
             }
             printf("\n");
+            for (int i = 0; i < HRACIA_PLOCHA_VELKOST_X; ++i) {
+                for (int j = 0; j < HRACIA_PLOCHA_VELKOST_Y; ++j) {
+                    if (j == 0) {
+                        printf("|");
+                    }
+                    printf("%c", pole[i][j]);
+                    if (j == HRACIA_PLOCHA_VELKOST_Y - 1) {
+                        printf("|");
+                    }
+                }
+                printf("\n");
+            }
+            for (int j = 0; j < HRACIA_PLOCHA_VELKOST_Y + 2; ++j) {
+                printf("-");
+            }
+            printf("\n");
+        } else {
+            printf("Hra konci, hrac narazil!\n");
+            koniec = true;
         }
-        for (int j = 0; j < HRACIA_PLOCHA_VELKOST_Y + 2; ++j) {
-            printf("-");
-        }
-        printf("\n");
     }
 
     close(sockfd);
     return 0;
-
-
-
-    //ahojky
 }

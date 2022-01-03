@@ -199,15 +199,34 @@ int main(int argc, char *argv[])
             default:
                 break;
         }
-        posunHada(&hrac1,&hraciePoleData);
-        n = write(newsockfd,hraciePoleData.pole,sizeof (hraciePoleData.pole));
-        if (n < 0)
-        {
-            perror("Error writing to socket");
-            return 5;
-        }
-    }
 
+        if (posunHada(&hrac1,&hraciePoleData)) {
+            char * naraz = "false";
+            n = write(newsockfd,naraz, strlen(naraz)+1);
+            if (n < 0)
+            {
+                perror("Error writing to socket");
+                return 5;
+            }
+            n = write(newsockfd,hraciePoleData.pole,sizeof (hraciePoleData.pole));
+            if (n < 0)
+            {
+                perror("Error writing to socket");
+                return 5;
+            }
+        } else {
+            char * naraz = "true";
+            n = write(newsockfd,naraz, strlen(naraz)+1);
+            if (n < 0)
+            {
+                perror("Error writing to socket");
+                return 5;
+            }
+            koniec = true;
+        }
+
+
+    }
 
     close(newsockfd);
     close(sockfd);
