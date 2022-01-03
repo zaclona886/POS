@@ -51,11 +51,18 @@ bool posunHada(HRAC_DATA * hracData, HRACIE_POLE_DATA * hraciePoleData){
                     hracData->clanky_hada[j].poziciaY = hracData->clanky_hada[j].poziciaY + 1;
                     break;
             }
+            //Kontrola ci nenarazil do steny
             if (hracData->clanky_hada[j].poziciaX < 0 || hracData->clanky_hada[j].poziciaX >= HRACIA_PLOCHA_VELKOST_X) {
                 return false;
             }
             if (hracData->clanky_hada[j].poziciaY < 0 || hracData->clanky_hada[j].poziciaY >= HRACIA_PLOCHA_VELKOST_Y) {
                 return false;
+            }
+            //Kontrola ci nenarazil sam do seba
+            for (int i = 1; i < hracData->velkostHada; ++i) {
+                if (hracData->clanky_hada[i].poziciaX == hracData->clanky_hada[0].poziciaX && hracData->clanky_hada[i].poziciaY == hracData->clanky_hada[0].poziciaY){
+                    return  false;
+                }
             }
         } else {
             int x = hracData->clanky_hada[j].poziciaX;
