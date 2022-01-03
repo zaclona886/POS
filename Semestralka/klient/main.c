@@ -56,6 +56,7 @@ int main(int argc, char *argv[])
 
     bool koniec = false;
     while (!koniec) {
+        //Citanie prikazu
         bzero(buffer,256);
         fgets(buffer, 255, stdin);
         n = write(sockfd, buffer, strlen(buffer));
@@ -67,16 +68,14 @@ int main(int argc, char *argv[])
             koniec = true;
             printf("Koniec hry!\n");
         }
-
-        // VYPISANIE HRACEJ PLOCHY
+        //Nacitanie hracej plochy zo soketu
         bzero(buffer,256);
         n = read(sockfd,buffer,255);
-        printf("%s\n",buffer);
         if (n < 0) {
             perror("Error reading from socket");
             return 6;
         }
-
+        //Vypisanie hracej plochy
         if (buffer[0] == 'f') {
             char pole[HRACIA_PLOCHA_VELKOST_X][HRACIA_PLOCHA_VELKOST_Y];
             n = read(sockfd, pole, sizeof(pole));

@@ -171,6 +171,7 @@ int main(int argc, char *argv[])
     // ZACIATOK CYKLU
     bool koniec = false;
     while (!koniec) {
+       //Nacitanie zmeny smeru
         bzero(buffer,256);
         n = read(newsockfd, buffer, 255);
         printf("Here is the message: %s\n", buffer);
@@ -185,21 +186,29 @@ int main(int argc, char *argv[])
                 printf("Koniec hry!");
                 break;
             case 'w':
-                hrac1.smer = 'u';
+                if (hrac1.smer != 'd') {
+                    hrac1.smer = 'u';
+                }
                 break;
             case 's':
-                hrac1.smer = 'd';
+                if (hrac1.smer != 'u') {
+                    hrac1.smer = 'd';
+                }
                 break;
             case 'a':
-                hrac1.smer = 'l';
+                if (hrac1.smer != 'r') {
+                    hrac1.smer = 'l';
+                }
                 break;
             case 'd':
-                hrac1.smer = 'r';
+                if (hrac1.smer != 'l') {
+                    hrac1.smer = 'r';
+                }
                 break;
             default:
                 break;
         }
-
+        //Posun hada
         if (posunHada(&hrac1,&hraciePoleData)) {
             bzero(buffer,256);
             buffer[0] = 'f';
