@@ -6,6 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <pthread.h>
 
 #define HRACIA_PLOCHA_VELKOST_X 25
 #define HRACIA_PLOCHA_VELKOST_Y 60
@@ -24,11 +25,13 @@ typedef struct hrac{
 
 typedef struct hraciePole{
     char pole[HRACIA_PLOCHA_VELKOST_X][HRACIA_PLOCHA_VELKOST_Y];
+    bool hraSkoncila;
 } HRACIE_POLE_DATA;
 
 bool posunHada(HRAC_DATA * hracData, HRACIE_POLE_DATA * hraciePoleData){
     int predX = 0;
     int predY = 0;
+    bool zobralKeks = false;
     for (int j = 0; j < hracData->velkostHada; ++j) {
         if (j == 0) {
             predX = hracData->clanky_hada[j].poziciaX;
@@ -50,6 +53,13 @@ bool posunHada(HRAC_DATA * hracData, HRACIE_POLE_DATA * hraciePoleData){
                     hracData->clanky_hada[j].poziciaX = hracData->clanky_hada[j].poziciaX;
                     hracData->clanky_hada[j].poziciaY = hracData->clanky_hada[j].poziciaY + 1;
                     break;
+            }
+            //Kontrola zobral keks
+            if (hraciePoleData->pole[hracData->clanky_hada[j].poziciaX][hracData->clanky_hada[j].poziciaY] == 'H'){
+                hraciePoleData->pole[hracData->clanky_hada[j].poziciaX][hracData->clanky_hada[j].poziciaY] = ' ';
+                if (hracData->velkostHada < MAX_VELKOST_HADA){
+                    zobralKeks = true;
+                }
             }
             //Kontrola ci nenarazil do steny
             if (hracData->clanky_hada[j].poziciaX < 0 || hracData->clanky_hada[j].poziciaX >= HRACIA_PLOCHA_VELKOST_X) {
@@ -73,15 +83,23 @@ bool posunHada(HRAC_DATA * hracData, HRACIE_POLE_DATA * hraciePoleData){
             predY = y;
         }
     }
+    //Kontrola zvacsenia
+    if (zobralKeks){
+        hracData->velkostHada++;
+        hracData->clanky_hada[hracData->velkostHada-1].poziciaX = predX;
+        hracData->clanky_hada[hracData->velkostHada-1].poziciaY = predY;
+    }
     // PREPISANIE HRACEJ PLOCHY
     for (int i = 0; i < HRACIA_PLOCHA_VELKOST_X; ++i) {
         for (int j = 0; j < HRACIA_PLOCHA_VELKOST_Y; ++j) {
-            hraciePoleData->pole[i][j] = ' ';
+            if (hraciePoleData->pole[i][j] != 'H'){
+                hraciePoleData->pole[i][j] = ' ';
+            }
         }
     }
     for (int j = 0; j < hracData->velkostHada; ++j) {
         hraciePoleData->pole[hracData->clanky_hada[j].poziciaX]
-        [hracData->clanky_hada[j].poziciaY] = 'x';
+        [hracData->clanky_hada[j].poziciaY] = 'X';
     }
     return true;
 }
@@ -109,6 +127,24 @@ void vykreslenieHracejPlochy(HRACIE_POLE_DATA * hraciePoleData){
     printf("\n");
 }
 
+void * generovanieKeksovF(void * hraciePole){
+    HRACIE_POLE_DATA * dataP = hraciePole;
+    printf("Zacalo sa generovanie kolacov\n");
+    while (!dataP->hraSkoncila){
+        sleep(5);
+        bool vygeneroval = false;
+        while (!vygeneroval) {
+            int x = rand() % HRACIA_PLOCHA_VELKOST_X;
+            int y = rand() % HRACIA_PLOCHA_VELKOST_Y;
+            if (dataP->pole[x][y] == ' ') {
+                dataP->pole[x][y] = 'H';
+                vygeneroval = true;
+            }
+        }
+    }
+    printf("Skoncilo sa generovanie kolacov\n");
+    pthread_exit(NULL);
+}
 
 int main(int argc, char *argv[])
 {
@@ -153,6 +189,7 @@ int main(int argc, char *argv[])
 
     // VYTVORENIE HRACEJ PLOCHY
     HRACIE_POLE_DATA hraciePoleData;
+    hraciePoleData.hraSkoncila = false;
     for (int i = 0; i < HRACIA_PLOCHA_VELKOST_X; ++i) {
         for (int j = 0; j < HRACIA_PLOCHA_VELKOST_Y; ++j) {
             hraciePoleData.pole[i][j] = ' ';
@@ -171,13 +208,13 @@ int main(int argc, char *argv[])
     }
     for (int j = 0; j < hrac1.velkostHada; ++j) {
         hraciePoleData.pole[hrac1.clanky_hada[j].poziciaX]
-            [hrac1.clanky_hada[j].poziciaY] = 'x';
+            [hrac1.clanky_hada[j].poziciaY] = 'X';
     }
-
-
+    //Vytvorenie vlakna na generovanie keksov
+    pthread_t generovanieKeksov;
+    pthread_create(&generovanieKeksov,NULL,generovanieKeksovF,&hraciePoleData);
     // ZACIATOK CYKLU
-    bool koniec = false;
-    while (!koniec) {
+    while (!hraciePoleData.hraSkoncila) {
        //Nacitanie zmeny smeru
         bzero(buffer,256);
         n = read(newsockfd, buffer, 255);
@@ -189,7 +226,7 @@ int main(int argc, char *argv[])
         }
         switch (buffer[0]) {
             case 'q':
-                koniec = true;
+                hraciePoleData.hraSkoncila = true;
                 printf("Koniec hry!");
                 break;
             case 'w':
@@ -240,12 +277,13 @@ int main(int argc, char *argv[])
                 perror("Error writing to socket");
                 return 5;
             }
-            koniec = true;
+            hraciePoleData.hraSkoncila = true;
         }
 
 
     }
 
+    pthread_join(generovanieKeksov,NULL);
     close(newsockfd);
     close(sockfd);
 
