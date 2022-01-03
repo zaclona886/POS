@@ -1,0 +1,1 @@
+CMakeLists.txt not found in E:\FRI\5.semester\POS\semestralkaGit\Semestralka Select CMakeLists.txt
