@@ -51,10 +51,10 @@ bool posunHada(HRAC_DATA * hracData, HRACIE_POLE_DATA * hraciePoleData){
                     hracData->clanky_hada[j].poziciaY = hracData->clanky_hada[j].poziciaY + 1;
                     break;
             }
-            if (hracData->clanky_hada[j].poziciaX < 0 || hracData->clanky_hada[j].poziciaX >= HRACIA_PLOCHA_VELKOST_Y) {
+            if (hracData->clanky_hada[j].poziciaX < 0 || hracData->clanky_hada[j].poziciaX >= HRACIA_PLOCHA_VELKOST_X) {
                 return false;
             }
-            if (hracData->clanky_hada[j].poziciaY < 0 || hracData->clanky_hada[j].poziciaY >= HRACIA_PLOCHA_VELKOST_X) {
+            if (hracData->clanky_hada[j].poziciaY < 0 || hracData->clanky_hada[j].poziciaY >= HRACIA_PLOCHA_VELKOST_Y) {
                 return false;
             }
         } else {
@@ -201,8 +201,9 @@ int main(int argc, char *argv[])
         }
 
         if (posunHada(&hrac1,&hraciePoleData)) {
-            char * naraz = "false";
-            n = write(newsockfd,naraz, strlen(naraz)+1);
+            bzero(buffer,256);
+            buffer[0] = 'f';
+            n = write(newsockfd,buffer, 255);
             if (n < 0)
             {
                 perror("Error writing to socket");
@@ -215,8 +216,9 @@ int main(int argc, char *argv[])
                 return 5;
             }
         } else {
-            char * naraz = "true";
-            n = write(newsockfd,naraz, strlen(naraz)+1);
+            bzero(buffer,256);
+            buffer[0] = 't';
+            n = write(newsockfd,buffer, 255);
             if (n < 0)
             {
                 perror("Error writing to socket");
