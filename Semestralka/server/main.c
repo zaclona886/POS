@@ -237,13 +237,15 @@ int main(int argc, char *argv[])
     i = 0;
     for (int y= hrac2.velkostHada - 1; y >= 0; --y) {
         hrac2.clanky_hada[i].poziciaX = HRACIA_PLOCHA_VELKOST_X - 1;
-        hrac2.clanky_hada[i].poziciaY = HRACIA_PLOCHA_VELKOST_Y - y;
+        hrac2.clanky_hada[i].poziciaY = HRACIA_PLOCHA_VELKOST_Y - y - 1;
         i++;
     }
     for (int j = 0; j < hrac1.velkostHada; ++j) {
         hraciePoleData.pole[hrac2.clanky_hada[j].poziciaX]
         [hrac2.clanky_hada[j].poziciaY] = 'O';
     }
+
+    vykreslenieHracejPlochy(&hraciePoleData);
     //Pridanie hracov do hracej plochy
     hraciePoleData.hrac1 = &hrac1;
     hraciePoleData.hrac2 = &hrac2;
@@ -252,43 +254,44 @@ int main(int argc, char *argv[])
     pthread_create(&generovanieHribov,NULL,generovanieHribovF,&hraciePoleData);
     // ZACIATOK CYKLU
     while (!hraciePoleData.hraSkoncila) {
-//       //Nacitanie zmeny smeru
-//        bzero(buffer,256);
-//        n = read(newsockfd, buffer, 255);
-//        printf("Here is the message: %s\n", buffer);
-//        if (n < 0)
-//        {
-//            perror("Error reading from socket");
-//            return 4;
-//        }
-//        switch (buffer[0]) {
-//            case 'q':
-//                hraciePoleData.hraSkoncila = true;
-//                printf("Koniec hry!");
-//                break;
-//            case 'w':
-//                if (hrac1.smer != 'd') {
-//                    hrac1.smer = 'u';
-//                }
-//                break;
-//            case 's':
-//                if (hrac1.smer != 'u') {
-//                    hrac1.smer = 'd';
-//                }
-//                break;
-//            case 'a':
-//                if (hrac1.smer != 'r') {
-//                    hrac1.smer = 'l';
-//                }
-//                break;
-//            case 'd':
-//                if (hrac1.smer != 'l') {
-//                    hrac1.smer = 'r';
-//                }
-//                break;
-//            default:
-//                break;
-//        }
+       //Nacitanie zmeny smeru
+        bzero(buffer,256);
+        n = read(newsockfd, buffer, 255);
+        printf("Smer %s\n", buffer);
+        if (n < 0)
+        {
+            perror("Error reading from socket");
+            return 4;
+        }
+        switch (buffer[0]) {
+            case 'q':
+                hraciePoleData.hraSkoncila = true;
+                printf("Koniec hry!");
+                break;
+            case 'w':
+                if (hrac1.smer != 'd') {
+                    hrac1.smer = 'u';
+                }
+                break;
+            case 's':
+                if (hrac1.smer != 'u') {
+                    hrac1.smer = 'd';
+                }
+                break;
+            case 'a':
+                if (hrac1.smer != 'r') {
+                    hrac1.smer = 'l';
+                }
+                break;
+            case 'd':
+                if (hrac1.smer != 'l') {
+                    hrac1.smer = 'r';
+                }
+                break;
+            default:
+                break;
+        }
+        //posuvanie hada
         if (!posunClankov(hraciePoleData.hrac1, &hraciePoleData)) {
             hraciePoleData.hraSkoncila = true;
             hraciePoleData.stavHry = 2;
@@ -345,6 +348,7 @@ int main(int argc, char *argv[])
                 perror("Error writing to socket");
                 return 5;
             }
+            vykreslenieHracejPlochy(&hraciePoleData);
         } else {
             bzero(buffer,256);
             buffer[0] = 't';
@@ -361,8 +365,55 @@ int main(int argc, char *argv[])
                 return 5;
             }
         }
-        sleep(1);
+        usleep(500);
     }
+    // VYHODNOTENIE HRY
+    if ( hraciePoleData.stavHry == 1) {
+        const char* msg = "Vyhral hrac cislo 1";
+        n = write(newsockfd,msg, 255);
+        if (n < 0)
+        {
+            perror("Error writing to socket");
+            return 5;
+        }
+        n = write(newsockfd2,msg, 255);
+        if (n < 0)
+        {
+            perror("Error writing to socket");
+            return 5;
+        }
+    }
+    if ( hraciePoleData.stavHry == 2) {
+        const char* msg = "Vyhral hrac cislo 2";
+        n = write(newsockfd,msg, 255);
+        if (n < 0)
+        {
+            perror("Error writing to socket");
+            return 5;
+        }
+        n = write(newsockfd2,msg, 255);
+        if (n < 0)
+        {
+            perror("Error writing to socket");
+            return 5;
+        }
+    }
+    if ( hraciePoleData.stavHry == 3) {
+        const char* msg = "Nevyhral nikto, remiza";
+        n = write(newsockfd,msg, 255);
+        if (n < 0)
+        {
+            perror("Error writing to socket");
+            return 5;
+        }
+        n = write(newsockfd2,msg, 255);
+        if (n < 0)
+        {
+            perror("Error writing to socket");
+            return 5;
+        }
+    }
+
 
     pthread_mutex_destroy(&mutexPocetHribov);
     pthread_cond_destroy(&pridajHrib);
