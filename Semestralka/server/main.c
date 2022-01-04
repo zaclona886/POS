@@ -19,6 +19,7 @@ typedef struct clanok{
 } CLANOK_DATA;
 
 typedef struct hrac{
+    char id;
     CLANOK_DATA clanky_hada[MAX_VELKOST_HADA];
     int velkostHada;
     char smer;
@@ -35,9 +36,7 @@ typedef struct hraciePole{
     int stavHry;
 } HRACIE_POLE_DATA;
 
-void zmenaSmeru(HRAC_DATA *pHrac, char i);
-
-bool posunClankov(HRAC_DATA * hracData, HRACIE_POLE_DATA * hraciePoleData){
+void posunClankov(HRAC_DATA * hracData, HRACIE_POLE_DATA * hraciePoleData){
     int predX = 0;
     int predY = 0;
     bool zobralHrib = false;
@@ -76,18 +75,54 @@ bool posunClankov(HRAC_DATA * hracData, HRACIE_POLE_DATA * hraciePoleData){
             }
             //Kontrola ci nenarazil do steny
             if (hracData->clanky_hada[j].poziciaX < 0 || hracData->clanky_hada[j].poziciaX >= HRACIA_PLOCHA_VELKOST_X) {
-                return false;
+                hraciePoleData->hraSkoncila = true;
+                if ( hracData->id == 'X') {
+                    hraciePoleData->stavHry = 2;
+                }
+                if ( hracData->id == 'O') {
+                    if (hraciePoleData->stavHry == 2) {
+                        hraciePoleData->stavHry = 3;
+                    } else {
+                        hraciePoleData->stavHry = 1;
+                    }
+                }
+                return;
             }
             if (hracData->clanky_hada[j].poziciaY < 0 || hracData->clanky_hada[j].poziciaY >= HRACIA_PLOCHA_VELKOST_Y) {
-                return false;
+                if ( hracData->id == 'X') {
+                    hraciePoleData->stavHry = 2;
+                }
+                if ( hracData->id == 'O') {
+                    if (hraciePoleData->stavHry == 2) {
+                        hraciePoleData->stavHry = 3;
+                    } else {
+                        hraciePoleData->stavHry = 1;
+                    }
+                }
+                return;
             }
-            //Kontrola ci nenarazil sam do seba
-            for (int i = 1; i < hracData->velkostHada; ++i) {
-                if (hracData->clanky_hada[i].poziciaX == hracData->clanky_hada[0].poziciaX && hracData->clanky_hada[i].poziciaY == hracData->clanky_hada[0].poziciaY){
-                    return  false;
+            //Kontrola ci nenarazil sam do seba alebo do 2. hraca
+            if (hraciePoleData->pole[hracData->clanky_hada[j].poziciaX][hracData->clanky_hada[j].poziciaY] == 'O' ||
+                    hraciePoleData->pole[hracData->clanky_hada[j].poziciaX][hracData->clanky_hada[j].poziciaY] == 'X'){
+                hraciePoleData->hraSkoncila = true;
+                if ((hraciePoleData->pole[hracData->clanky_hada[j].poziciaX][hracData->clanky_hada[j].poziciaY] == 'O' ||
+                    hraciePoleData->pole[hracData->clanky_hada[j].poziciaX][hracData->clanky_hada[j].poziciaY] == 'X') &&
+                    hracData->id == 'O') {
+                    if (hraciePoleData->stavHry == 2) {
+                        hraciePoleData->stavHry = 3;
+                    } else {
+                        hraciePoleData->stavHry = 1;
+                    }
+                    return;
+                }
+                if ((hraciePoleData->pole[hracData->clanky_hada[j].poziciaX][hracData->clanky_hada[j].poziciaY] == 'O' ||
+                     hraciePoleData->pole[hracData->clanky_hada[j].poziciaX][hracData->clanky_hada[j].poziciaY] == 'X') &&
+                    hracData->id == 'X') {
+                    hraciePoleData->stavHry = 2;
+                    return;
                 }
             }
-            //Kontrola ci nenarazil do druheho hada
+
         } else {
             int x = hracData->clanky_hada[j].poziciaX;
             int y = hracData->clanky_hada[j].poziciaY;
@@ -103,7 +138,6 @@ bool posunClankov(HRAC_DATA * hracData, HRACIE_POLE_DATA * hraciePoleData){
         hracData->clanky_hada[hracData->velkostHada-1].poziciaX = predX;
         hracData->clanky_hada[hracData->velkostHada-1].poziciaY = predY;
     }
-    return true;
 }
 
 void vykreslenieHracejPlochy(HRACIE_POLE_DATA * hraciePoleData){
@@ -249,6 +283,7 @@ int main(int argc, char *argv[])
     HRAC_DATA hrac1;
     hrac1.velkostHada = 10;
     hrac1.smer = 'r';
+    hrac1.id = 'X';
     int i = 0;
     for (int y= hrac1.velkostHada - 1; y >= 0; --y) {
         hrac1.clanky_hada[i].poziciaX = 0;
@@ -263,6 +298,7 @@ int main(int argc, char *argv[])
     HRAC_DATA hrac2;
     hrac2.velkostHada = 10;
     hrac2.smer = 'l';
+    hrac2.id = 'O';
     i = 0;
     for (int y= hrac2.velkostHada - 1; y >= 0; --y) {
         hrac2.clanky_hada[i].poziciaX = HRACIA_PLOCHA_VELKOST_X - 1;
@@ -284,9 +320,9 @@ int main(int argc, char *argv[])
     // ZACIATOK CYKLU
     while (!hraciePoleData.hraSkoncila) {
        //Nacitanie zmeny smeru hrac1
-        bzero(buffer,256);
+        /*bzero(buffer,256);
         n = read(newsockfd, buffer, 255);
-        printf("Smer hrac1%s\n", buffer);
+        printf("Hrac 1 zadal smer:%s\n", buffer);
         if (n < 0)
         {
             perror("Error reading from socket");
@@ -296,27 +332,17 @@ int main(int argc, char *argv[])
         //Nacitanie zmeny smeru hrac2
         bzero(buffer,256);
         n = read(newsockfd2, buffer, 255);
-        printf("Smer hrac1%s\n", buffer);
+        printf("Hrac 2 zadal smer:%s\n", buffer);
         if (n < 0)
         {
             perror("Error reading from socket");
             return 4;
         }
-        zmenaSmeru(hraciePoleData.hrac2,buffer[0]);
+        zmenaSmeru(hraciePoleData.hrac2,buffer[0]);*/
 
         //posuvanie hada
-        if (!posunClankov(hraciePoleData.hrac1, &hraciePoleData)) {
-            hraciePoleData.hraSkoncila = true;
-            hraciePoleData.stavHry = 2;
-        }
-        if (!posunClankov(hraciePoleData.hrac2, &hraciePoleData)) {
-            hraciePoleData.hraSkoncila = true;
-            if (hraciePoleData.stavHry == 2) {
-                hraciePoleData.stavHry = 3;
-            } else {
-                hraciePoleData.stavHry = 1;
-            }
-        }
+        posunClankov(hraciePoleData.hrac1, &hraciePoleData);
+        posunClankov(hraciePoleData.hrac2, &hraciePoleData);
         // PREPISANIE HRACEJ PLOCHY
         for (int i = 0; i < HRACIA_PLOCHA_VELKOST_X; ++i) {
             for (int j = 0; j < HRACIA_PLOCHA_VELKOST_Y; ++j) {
@@ -378,18 +404,19 @@ int main(int argc, char *argv[])
                 return 5;
             }
         }
-        usleep(1000);
+        sleep(1);
     }
     // VYHODNOTENIE HRY
     if ( hraciePoleData.stavHry == 1) {
-        const char* msg = "Vyhral hrac cislo 1";
-        n = write(newsockfd,msg, 255);
+        bzero(buffer,256);
+        sprintf(buffer,"Vyhral 1.hrac!\nDlzka hada 1.hraca:%d\nDlzka hada 2.hraca:%d",hrac1.velkostHada,hrac2.velkostHada);
+        n = write(newsockfd,buffer, 255);
         if (n < 0)
         {
             perror("Error writing to socket");
             return 5;
         }
-        n = write(newsockfd2,msg, 255);
+        n = write(newsockfd2,buffer, 255);
         if (n < 0)
         {
             perror("Error writing to socket");
@@ -397,14 +424,15 @@ int main(int argc, char *argv[])
         }
     }
     if ( hraciePoleData.stavHry == 2) {
-        const char* msg = "Vyhral hrac cislo 2";
-        n = write(newsockfd,msg, 255);
+        bzero(buffer,256);
+        sprintf(buffer,"Vyhral 2.hrac!\nDlzka hada 1.hraca:%d\nDlzka hada 2.hraca:%d",hrac1.velkostHada,hrac2.velkostHada);
+        n = write(newsockfd,buffer, 255);
         if (n < 0)
         {
             perror("Error writing to socket");
             return 5;
         }
-        n = write(newsockfd2,msg, 255);
+        n = write(newsockfd2,buffer, 255);
         if (n < 0)
         {
             perror("Error writing to socket");
@@ -412,21 +440,21 @@ int main(int argc, char *argv[])
         }
     }
     if ( hraciePoleData.stavHry == 3) {
-        const char* msg = "Nevyhral nikto, remiza";
-        n = write(newsockfd,msg, 255);
+        bzero(buffer,256);
+        sprintf(buffer,"Nevyhral nikto, remiza!\nDlzka hada 1.hraca:%d.\nDlzka hada 2.hraca:%d.",hrac1.velkostHada,hrac2.velkostHada);
+        n = write(newsockfd,buffer, 255);
         if (n < 0)
         {
             perror("Error writing to socket");
             return 5;
         }
-        n = write(newsockfd2,msg, 255);
+        n = write(newsockfd2,buffer, 255);
         if (n < 0)
         {
             perror("Error writing to socket");
             return 5;
         }
     }
-
 
     pthread_mutex_destroy(&mutexPocetHribov);
     pthread_cond_destroy(&pridajHrib);
