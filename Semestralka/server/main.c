@@ -89,6 +89,7 @@ void posunClankov(HRAC_DATA * hracData, HRACIE_POLE_DATA * hraciePoleData){
                 return;
             }
             if (hracData->clanky_hada[j].poziciaY < 0 || hracData->clanky_hada[j].poziciaY >= HRACIA_PLOCHA_VELKOST_Y) {
+                hraciePoleData->hraSkoncila = true;
                 if ( hracData->id == 'X') {
                     hraciePoleData->stavHry = 2;
                 }
@@ -404,7 +405,7 @@ int main(int argc, char *argv[])
                 return 5;
             }
         }
-        sleep(1);
+        usleep(500000);
     }
     // VYHODNOTENIE HRY
     if ( hraciePoleData.stavHry == 1) {
