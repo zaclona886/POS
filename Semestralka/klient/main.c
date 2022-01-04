@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     while (!koniec) {
         //Citanie prikazu
         bzero(buffer,256);
-        fgets(buffer, 2, stdin);
+        fgets(buffer, 255, stdin);
         n = write(sockfd, buffer, strlen(buffer));
         if (n < 0) {
             perror("Error writing to socket");

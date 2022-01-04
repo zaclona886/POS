@@ -35,6 +35,8 @@ typedef struct hraciePole{
     int stavHry;
 } HRACIE_POLE_DATA;
 
+void zmenaSmeru(HRAC_DATA *pHrac, char i);
+
 bool posunClankov(HRAC_DATA * hracData, HRACIE_POLE_DATA * hraciePoleData){
     int predX = 0;
     int predY = 0;
@@ -152,6 +154,33 @@ void * generovanieHribovF(void * hraciePole){
     pthread_exit(NULL);
 }
 
+void zmenaSmeru(HRAC_DATA * pHrac, char smer) {
+    switch (smer) {
+        case 'w':
+            if (pHrac->smer != 'd') {
+                pHrac->smer = 'u';
+            }
+            break;
+        case 's':
+            if (pHrac->smer != 'u') {
+                pHrac->smer = 'd';
+            }
+            break;
+        case 'a':
+            if (pHrac->smer != 'r') {
+                pHrac->smer = 'l';
+            }
+            break;
+        case 'd':
+            if (pHrac->smer != 'l') {
+                pHrac->smer = 'r';
+            }
+            break;
+        default:
+            break;
+    }
+}
+
 int main(int argc, char *argv[])
 {
     int sockfd, newsockfd, newsockfd2;
@@ -254,43 +283,27 @@ int main(int argc, char *argv[])
     pthread_create(&generovanieHribov,NULL,generovanieHribovF,&hraciePoleData);
     // ZACIATOK CYKLU
     while (!hraciePoleData.hraSkoncila) {
-       //Nacitanie zmeny smeru
+       //Nacitanie zmeny smeru hrac1
         bzero(buffer,256);
         n = read(newsockfd, buffer, 255);
-        printf("Smer %s\n", buffer);
+        printf("Smer hrac1%s\n", buffer);
         if (n < 0)
         {
             perror("Error reading from socket");
             return 4;
         }
-        switch (buffer[0]) {
-            case 'q':
-                hraciePoleData.hraSkoncila = true;
-                printf("Koniec hry!");
-                break;
-            case 'w':
-                if (hrac1.smer != 'd') {
-                    hrac1.smer = 'u';
-                }
-                break;
-            case 's':
-                if (hrac1.smer != 'u') {
-                    hrac1.smer = 'd';
-                }
-                break;
-            case 'a':
-                if (hrac1.smer != 'r') {
-                    hrac1.smer = 'l';
-                }
-                break;
-            case 'd':
-                if (hrac1.smer != 'l') {
-                    hrac1.smer = 'r';
-                }
-                break;
-            default:
-                break;
+        zmenaSmeru(hraciePoleData.hrac1,buffer[0]);
+        //Nacitanie zmeny smeru hrac2
+        bzero(buffer,256);
+        n = read(newsockfd2, buffer, 255);
+        printf("Smer hrac1%s\n", buffer);
+        if (n < 0)
+        {
+            perror("Error reading from socket");
+            return 4;
         }
+        zmenaSmeru(hraciePoleData.hrac2,buffer[0]);
+
         //posuvanie hada
         if (!posunClankov(hraciePoleData.hrac1, &hraciePoleData)) {
             hraciePoleData.hraSkoncila = true;
@@ -365,7 +378,7 @@ int main(int argc, char *argv[])
                 return 5;
             }
         }
-        usleep(500);
+        usleep(1000);
     }
     // VYHODNOTENIE HRY
     if ( hraciePoleData.stavHry == 1) {
