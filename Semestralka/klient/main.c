@@ -56,18 +56,18 @@ int main(int argc, char *argv[])
 
     bool koniec = false;
     while (!koniec) {
-        //Citanie prikazu
-        bzero(buffer,256);
-        fgets(buffer, 255, stdin);
-        n = write(sockfd, buffer, strlen(buffer));
-        if (n < 0) {
-            perror("Error writing to socket");
-            return 5;
-        }
-        if (buffer[0] == 'q') {
-            koniec = true;
-            printf("Koniec hry!\n");
-        }
+//        //Citanie prikazu
+//        bzero(buffer,256);
+//        fgets(buffer, 255, stdin);
+//        n = write(sockfd, buffer, strlen(buffer));
+//        if (n < 0) {
+//            perror("Error writing to socket");
+//            return 5;
+//        }
+//        if (buffer[0] == 'q') {
+//            koniec = true;
+//            printf("Koniec hry!\n");
+//        }
         //Nacitanie hracej plochy zo soketu
         bzero(buffer,256);
         n = read(sockfd,buffer,255);
