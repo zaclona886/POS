@@ -23,9 +23,10 @@ void * zadavanieSmeruF(void * data){
     char buffer[256];
     while (!dataKlient->koniec) {
         bzero(buffer, 256);
-        fgets(buffer, 255, stdin);
+        //fgets(buffer, 255, stdin);
         //n = write(dataKlient->socket, buffer, strlen(buffer));
-        printf("%c",buffer[0]);
+        n = getchar();
+        printf("%d",n);
         if (buffer[0] == 'q') {
             dataKlient->koniec = true;
             printf("Koniec hry!\n");
