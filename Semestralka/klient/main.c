@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
         //system("clear");
         //Nacitanie ci posun prebehol uspesne
         bzero(buffer,256);
-        n = read(socket,buffer,255);
+        n = read(sockfd,buffer,255);
         if (n < 0) {
             perror("Error reading from socket");
             return 6;
