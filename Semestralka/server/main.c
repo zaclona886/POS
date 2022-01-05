@@ -237,7 +237,7 @@ void * nacitanieSmeruHracF2(void * data){
     while (!dataPole->hraSkoncila) {
         bzero(buffer,256);
         read(dataPole->hrac2->socket, buffer, 255);
-        printf("Hrac 1 zadal smer:%s\n", buffer);
+        printf("Hrac 2 zadal smer:%s\n", buffer);
         zmenaSmeru(dataPole->hrac2,buffer[0]);
     }
     pthread_exit(NULL);

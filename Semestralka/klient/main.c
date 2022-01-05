@@ -25,8 +25,7 @@ void * zadavanieSmeruF(void * data){
     while (!dataKlient->koniec) {
         char smer = ' ';
         bzero(buffer, 256);
-        //fgets(buffer, 255, stdin);
-        scanf("%1s",buffer);
+        fgets(buffer, 255, stdin);
         if (buffer[0] != ' ') {
             printf("%s",buffer);
         }
@@ -34,7 +33,7 @@ void * zadavanieSmeruF(void * data){
             dataKlient->koniec = true;
             printf("Koniec hry!\n");
         }
-        write(dataKlient->socket, buffer, strlen(buffer));
+        write(dataKlient->socket, buffer, 255);
     }
     printf("Skoncilo sa vlakno\n");
     pthread_exit(NULL);
