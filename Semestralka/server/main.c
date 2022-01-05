@@ -321,7 +321,7 @@ int main(int argc, char *argv[])
     // ZACIATOK CYKLU
     while (!hraciePoleData.hraSkoncila) {
        //Nacitanie zmeny smeru hrac1
-        /*bzero(buffer,256);
+       /* bzero(buffer,256);
         n = read(newsockfd, buffer, 255);
         printf("Hrac 1 zadal smer:%s\n", buffer);
         if (n < 0)

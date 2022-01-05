@@ -7,9 +7,36 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <pthread.h>
 
 #define HRACIA_PLOCHA_VELKOST_X 25
 #define HRACIA_PLOCHA_VELKOST_Y 60
+
+typedef struct klient{
+    int socket;
+    bool koniec;
+} DATA_KLIENT;
+
+void * zadavanieSmeruF(void * data){
+    DATA_KLIENT * dataKlient = data;
+    int n;
+    char buffer[256];
+    while (!dataKlient->koniec) {
+        bzero(buffer, 256);
+        fgets(buffer, 255, stdin);
+        //n = write(dataKlient->socket, buffer, strlen(buffer));
+        printf("%c",buffer[0]);
+        if (n < 0) {
+            perror("Error writing to socket");
+            return 5;
+        }
+        if (buffer[0] == 'q') {
+            dataKlient->koniec = true;
+            printf("Koniec hry!\n");
+        }
+    }
+    pthread_exit(NULL);
+}
 
 int main(int argc, char *argv[])
 {
@@ -54,23 +81,19 @@ int main(int argc, char *argv[])
         return 4;
     }
 
-    bool koniec = false;
-    while (!koniec) {
-        //Citanie prikazu
-        /*bzero(buffer,256);
-        fgets(buffer, 255, stdin);
-        n = write(sockfd, buffer, strlen(buffer));
-        if (n < 0) {
-            perror("Error writing to socket");
-            return 5;
-        }
-        if (buffer[0] == 'q') {
-            koniec = true;
-            printf("Koniec hry!\n");
-        }*/
-        //Nacitanie hracej plochy zo soketu
+    // vytvorenie struktury pre klienta
+    DATA_KLIENT dataKlient;
+    dataKlient.koniec = false;
+    dataKlient.socket = sockfd;
+    //vlakno na zadavanie smeru
+    pthread_t vlaknoZadavanieSmeru;
+    pthread_create(&vlaknoZadavanieSmeru, NULL, zadavanieSmeruF, &dataKlient);
+
+    while (!dataKlient.koniec) {
+        //system("clear");
+        //Nacitanie ci posun prebehol uspesne
         bzero(buffer,256);
-        n = read(sockfd,buffer,255);
+        n = read(socket,buffer,255);
         if (n < 0) {
             perror("Error reading from socket");
             return 6;
@@ -104,7 +127,7 @@ int main(int argc, char *argv[])
             }
             printf("\n");
         } else {
-            koniec = true;
+            dataKlient.koniec = true;
         }
     }
 
@@ -116,8 +139,6 @@ int main(int argc, char *argv[])
         return 6;
     }
     printf("%s\n",buffer);
-
-
 
     close(sockfd);
     return 0;
