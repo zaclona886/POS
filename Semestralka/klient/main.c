@@ -26,10 +26,6 @@ void * zadavanieSmeruF(void * data){
         fgets(buffer, 255, stdin);
         //n = write(dataKlient->socket, buffer, strlen(buffer));
         printf("%c",buffer[0]);
-        if (n < 0) {
-            perror("Error writing to socket");
-            return 5;
-        }
         if (buffer[0] == 'q') {
             dataKlient->koniec = true;
             printf("Koniec hry!\n");
@@ -140,6 +136,7 @@ int main(int argc, char *argv[])
     }
     printf("%s\n",buffer);
 
+    pthread_join(vlaknoZadavanieSmeru,NULL);
     close(sockfd);
     return 0;
 }
