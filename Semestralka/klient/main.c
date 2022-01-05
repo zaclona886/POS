@@ -26,9 +26,9 @@ void * zadavanieSmeruF(void * data){
         bzero(buffer, 256);
         //fgets(buffer, 255, stdin);
         //n = write(dataKlient->socket, buffer, strlen(buffer));
-        scanf("%s",smer);
-        if (smer != ' ') {
-            printf("%d",smer);
+        scanf("%1s",buffer);
+        if (buffer[0] != ' ') {
+            printf("%s",buffer);
         }
         if (buffer[0] == 'q') {
             dataKlient->koniec = true;
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
     pthread_create(&vlaknoZadavanieSmeru, NULL, zadavanieSmeruF, &dataKlient);
 
     while (!dataKlient.koniec) {
-        //system("clear");
+        system("clear");
         //Nacitanie ci posun prebehol uspesne
         bzero(buffer,256);
         n = read(sockfd,buffer,255);
