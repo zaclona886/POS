@@ -19,13 +19,13 @@ typedef struct klient{
 
 void * zadavanieSmeruF(void * data){
     DATA_KLIENT * dataKlient = data;
+    printf("Zacalo sa vlakno\n");
     int n;
     char buffer[256];
     while (!dataKlient->koniec) {
         char smer = ' ';
         bzero(buffer, 256);
         //fgets(buffer, 255, stdin);
-        //n = write(dataKlient->socket, buffer, strlen(buffer));
         scanf("%1s",buffer);
         if (buffer[0] != ' ') {
             printf("%s",buffer);
@@ -34,7 +34,9 @@ void * zadavanieSmeruF(void * data){
             dataKlient->koniec = true;
             printf("Koniec hry!\n");
         }
+        write(dataKlient->socket, buffer, strlen(buffer));
     }
+    printf("Skoncilo sa vlakno\n");
     pthread_exit(NULL);
 }
 
@@ -90,7 +92,6 @@ int main(int argc, char *argv[])
     pthread_create(&vlaknoZadavanieSmeru, NULL, zadavanieSmeruF, &dataKlient);
 
     while (!dataKlient.koniec) {
-        system("clear");
         //Nacitanie ci posun prebehol uspesne
         bzero(buffer,256);
         n = read(sockfd,buffer,255);
@@ -128,6 +129,7 @@ int main(int argc, char *argv[])
             printf("\n");
         } else {
             dataKlient.koniec = true;
+
         }
     }
 

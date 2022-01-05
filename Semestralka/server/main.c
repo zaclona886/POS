@@ -23,6 +23,7 @@ typedef struct hrac{
     CLANOK_DATA clanky_hada[MAX_VELKOST_HADA];
     int velkostHada;
     char smer;
+    int socket;
 } HRAC_DATA;
 
 typedef struct hraciePole{
@@ -216,6 +217,32 @@ void zmenaSmeru(HRAC_DATA * pHrac, char smer) {
     }
 }
 
+void * nacitanieSmeruHracF1(void * data){
+    HRACIE_POLE_DATA * dataPole = data;
+    printf("Vlakno pre hraca1\n");
+    char buffer[256];
+    while (!dataPole->hraSkoncila) {
+        bzero(buffer,256);
+        read(dataPole->hrac1->socket, buffer, 255);
+        printf("Hrac 1 zadal smer:%s\n", buffer);
+        zmenaSmeru(dataPole->hrac1,buffer[0]);
+    }
+    pthread_exit(NULL);
+}
+
+void * nacitanieSmeruHracF2(void * data){
+    HRACIE_POLE_DATA * dataPole = data;
+    printf("Vlakno pre hraca2\n");
+    char buffer[256];
+    while (!dataPole->hraSkoncila) {
+        bzero(buffer,256);
+        read(dataPole->hrac2->socket, buffer, 255);
+        printf("Hrac 1 zadal smer:%s\n", buffer);
+        zmenaSmeru(dataPole->hrac2,buffer[0]);
+    }
+    pthread_exit(NULL);
+}
+
 int main(int argc, char *argv[])
 {
     int sockfd, newsockfd, newsockfd2;
@@ -256,7 +283,7 @@ int main(int argc, char *argv[])
         perror("ERROR on accept");
         return 3;
     }
-    printf("Hrac1 sa napojil caka sa na napojenie druheho hraca\n");
+    printf("Hrac1 sa napojil, caka sa na napojenie druheho hraca\n");
     //Hrac2
     newsockfd2 = accept(sockfd, (struct sockaddr*)&cli_addr, &cli_len);
     if (newsockfd < 0)
@@ -285,6 +312,7 @@ int main(int argc, char *argv[])
     hrac1.velkostHada = 10;
     hrac1.smer = 'r';
     hrac1.id = 'X';
+    hrac1.socket = newsockfd;
     int i = 0;
     for (int y= hrac1.velkostHada - 1; y >= 0; --y) {
         hrac1.clanky_hada[i].poziciaX = 0;
@@ -300,6 +328,7 @@ int main(int argc, char *argv[])
     hrac2.velkostHada = 10;
     hrac2.smer = 'l';
     hrac2.id = 'O';
+    hrac2.socket = newsockfd2;
     i = 0;
     for (int y= hrac2.velkostHada - 1; y >= 0; --y) {
         hrac2.clanky_hada[i].poziciaX = HRACIA_PLOCHA_VELKOST_X - 1;
@@ -318,29 +347,13 @@ int main(int argc, char *argv[])
     //Vytvorenie vlakna na generovanie hribov
     pthread_t generovanieHribov;
     pthread_create(&generovanieHribov,NULL,generovanieHribovF,&hraciePoleData);
+
+    pthread_t nacitanieSmeruHrac1;
+    pthread_create(&nacitanieSmeruHrac1, NULL, nacitanieSmeruHracF1, &hraciePoleData);
+    pthread_t nacitanieSmeruHrac2;
+    pthread_create(&nacitanieSmeruHrac2,NULL,nacitanieSmeruHracF2,&hraciePoleData);
     // ZACIATOK CYKLU
     while (!hraciePoleData.hraSkoncila) {
-       //Nacitanie zmeny smeru hrac1
-       /* bzero(buffer,256);
-        n = read(newsockfd, buffer, 255);
-        printf("Hrac 1 zadal smer:%s\n", buffer);
-        if (n < 0)
-        {
-            perror("Error reading from socket");
-            return 4;
-        }
-        zmenaSmeru(hraciePoleData.hrac1,buffer[0]);
-        //Nacitanie zmeny smeru hrac2
-        bzero(buffer,256);
-        n = read(newsockfd2, buffer, 255);
-        printf("Hrac 2 zadal smer:%s\n", buffer);
-        if (n < 0)
-        {
-            perror("Error reading from socket");
-            return 4;
-        }
-        zmenaSmeru(hraciePoleData.hrac2,buffer[0]);*/
-
         //posuvanie hada
         posunClankov(hraciePoleData.hrac1, &hraciePoleData);
         posunClankov(hraciePoleData.hrac2, &hraciePoleData);
@@ -405,7 +418,8 @@ int main(int argc, char *argv[])
                 return 5;
             }
         }
-        usleep(500000);
+        //usleep(5000000);
+        sleep(5);
     }
     // VYHODNOTENIE HRY
     if ( hraciePoleData.stavHry == 1) {
@@ -460,6 +474,8 @@ int main(int argc, char *argv[])
     pthread_mutex_destroy(&mutexPocetHribov);
     pthread_cond_destroy(&pridajHrib);
     pthread_join(generovanieHribov,NULL);
+    pthread_join(nacitanieSmeruHrac1,NULL);
+    pthread_join(nacitanieSmeruHrac2,NULL);
     close(newsockfd);
     close(sockfd);
 
