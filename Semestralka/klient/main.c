@@ -22,11 +22,14 @@ void * zadavanieSmeruF(void * data){
     int n;
     char buffer[256];
     while (!dataKlient->koniec) {
+        char smer = ' ';
         bzero(buffer, 256);
         //fgets(buffer, 255, stdin);
         //n = write(dataKlient->socket, buffer, strlen(buffer));
-        n = getchar();
-        printf("%d",n);
+        scanf("%s",smer);
+        if (smer != ' ') {
+            printf("%d",smer);
+        }
         if (buffer[0] == 'q') {
             dataKlient->koniec = true;
             printf("Koniec hry!\n");
