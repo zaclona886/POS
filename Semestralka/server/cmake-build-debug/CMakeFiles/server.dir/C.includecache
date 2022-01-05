@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/tmp/tmp.VzXurEdcCR/main.c
+/tmp/tmp.fB5iWzU7A5/main.c
 sys/types.h
 -
 sys/socket.h
@@ -22,5 +22,7 @@ string.h
 unistd.h
 -
 stdbool.h
+-
+pthread.h
 -
 

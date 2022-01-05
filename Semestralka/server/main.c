@@ -167,7 +167,7 @@ void vykreslenieHracejPlochy(HRACIE_POLE_DATA * hraciePoleData){
 
 void * generovanieHribovF(void * hraciePole){
     HRACIE_POLE_DATA * dataP = hraciePole;
-    printf("Zacalo sa generovanie kolacov\n");
+    printf("Zacalo sa generovanie hribov\n");
     while (!dataP->hraSkoncila){
         sleep(5);
         bool vygeneroval = false;
@@ -175,7 +175,7 @@ void * generovanieHribovF(void * hraciePole){
         while (dataP->pocetHribov >= MAX_POCET_HRIBOV){
             pthread_cond_wait(dataP->pridajHrib,dataP->mutexPocetHribov);
         }
-        while (!vygeneroval) {
+        while (!vygeneroval || !dataP->hraSkoncila) {
             int x = rand() % HRACIA_PLOCHA_VELKOST_X;
             int y = rand() % HRACIA_PLOCHA_VELKOST_Y;
             if (dataP->pole[x][y] == ' ') {
@@ -186,7 +186,7 @@ void * generovanieHribovF(void * hraciePole){
         }
         pthread_mutex_unlock(dataP->mutexPocetHribov);
     }
-    printf("Skoncilo sa generovanie kolacov\n");
+    printf("Skoncilo sa generovanie hribov\n");
     pthread_exit(NULL);
 }
 
@@ -421,7 +421,7 @@ int main(int argc, char *argv[])
                 return 5;
             }
         }
-        usleep(500000);
+        usleep(250000);
         //sleep(5);
     }
     // VYHODNOTENIE HRY
