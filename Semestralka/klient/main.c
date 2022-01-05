@@ -19,7 +19,7 @@ typedef struct klient{
 
 void * zadavanieSmeruF(void * data){
     DATA_KLIENT * dataKlient = data;
-    printf("Zacalo sa vlakno\n");
+    printf("Zacalo sa vlakno pre zadavanie smeru\n");
     int n;
     char buffer[256];
     while (!dataKlient->koniec) {
@@ -27,7 +27,7 @@ void * zadavanieSmeruF(void * data){
         bzero(buffer, 256);
         fgets(buffer, 255, stdin);
         if (buffer[0] != ' ') {
-            printf("%s",buffer);
+            printf("Hrac zadal: %s\n",buffer);
         }
         if (buffer[0] == 'q') {
             dataKlient->koniec = true;
@@ -35,7 +35,7 @@ void * zadavanieSmeruF(void * data){
         }
         write(dataKlient->socket, buffer, 255);
     }
-    printf("Skoncilo sa vlakno\n");
+    printf("Skoncilo sa vlakno pre zadavanie smeru\n");
     pthread_exit(NULL);
 }
 

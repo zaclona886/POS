@@ -219,7 +219,7 @@ void zmenaSmeru(HRAC_DATA * pHrac, char smer) {
 
 void * nacitanieSmeruHracF1(void * data){
     HRACIE_POLE_DATA * dataPole = data;
-    printf("Vlakno pre hraca1\n");
+    printf("Vlakno pre nacitanie smeru hraca1 zacalo\n");
     char buffer[256];
     while (!dataPole->hraSkoncila) {
         bzero(buffer,256);
@@ -227,12 +227,13 @@ void * nacitanieSmeruHracF1(void * data){
         printf("Hrac 1 zadal smer:%s\n", buffer);
         zmenaSmeru(dataPole->hrac1,buffer[0]);
     }
+    printf("Vlakno pre nacitanie smeru hraca1 skoncilo\n");
     pthread_exit(NULL);
 }
 
 void * nacitanieSmeruHracF2(void * data){
     HRACIE_POLE_DATA * dataPole = data;
-    printf("Vlakno pre hraca2\n");
+    printf("Vlakno pre nacitanie smeru hraca2 zacalo\n");
     char buffer[256];
     while (!dataPole->hraSkoncila) {
         bzero(buffer,256);
@@ -240,11 +241,13 @@ void * nacitanieSmeruHracF2(void * data){
         printf("Hrac 2 zadal smer:%s\n", buffer);
         zmenaSmeru(dataPole->hrac2,buffer[0]);
     }
+    printf("Vlakno pre nacitanie smeru hraca2 skoncilo\n");
     pthread_exit(NULL);
 }
 
 int main(int argc, char *argv[])
 {
+    srand(time(NULL));
     int sockfd, newsockfd, newsockfd2;
     socklen_t cli_len;
     struct sockaddr_in serv_addr, cli_addr;
@@ -418,8 +421,8 @@ int main(int argc, char *argv[])
                 return 5;
             }
         }
-        //usleep(5000000);
-        sleep(5);
+        usleep(500000);
+        //sleep(5);
     }
     // VYHODNOTENIE HRY
     if ( hraciePoleData.stavHry == 1) {
@@ -454,6 +457,7 @@ int main(int argc, char *argv[])
             return 5;
         }
     }
+
     if ( hraciePoleData.stavHry == 3) {
         bzero(buffer,256);
         sprintf(buffer,"Nevyhral nikto, remiza!\nDlzka hada 1.hraca:%d.\nDlzka hada 2.hraca:%d.",hrac1.velkostHada,hrac2.velkostHada);
@@ -477,6 +481,7 @@ int main(int argc, char *argv[])
     pthread_join(nacitanieSmeruHrac1,NULL);
     pthread_join(nacitanieSmeruHrac2,NULL);
     close(newsockfd);
+    close(newsockfd2);
     close(sockfd);
 
     return 0;
