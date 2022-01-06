@@ -32,7 +32,6 @@ void * zadavanieSmeruF(void * data){
         while (c != 'w' && c != 's' && c != 'a' && c != 'd'){
             c=getchar();
         }
-        printf("\n");
         tcsetattr(STDIN_FILENO,TCSANOW,&oldt);
         bzero(buffer, 256);
         buffer[0] = c;
@@ -85,6 +84,7 @@ int main(int argc, char *argv[])
         return 4;
     }
     //cakanie na spustenie hry
+    system("clear");
     bzero(buffer,256);
     n = read(sockfd,buffer,255);
     if (n < 0) {
