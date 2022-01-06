@@ -30,7 +30,7 @@ void * zadavanieSmeruF(void * data){
         newt = oldt;
         newt.c_lflag &= ~(ICANON);
         tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-        while (c != 'w' && c != 's' && c != 'a' && c != 'd' && c != 'q'){
+        while (c != 'w' && c != 's' && c != 'a' && c != 'd'){
             c=getchar();
         }
         tcsetattr(STDIN_FILENO,TCSANOW,&oldt);
@@ -134,7 +134,6 @@ int main(int argc, char *argv[])
             printf("\n");
         } else {
             dataKlient.koniec = true;
-
         }
     }
 

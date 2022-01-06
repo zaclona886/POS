@@ -224,14 +224,8 @@ void * nacitanieSmeruHracF1(void * data){
     while (!dataPole->hraSkoncila) {
         bzero(buffer,256);
         read(dataPole->hrac1->socket, buffer, 255);
-        if (buffer[0] == 'q'){
-            dataPole->hraSkoncila = true;
-            dataPole->stavHry = 2;
-            printf("Hrac X ukoncil hru\n");
-        } else{
-            printf("Hrac X zadal smer:%s\n", buffer);
-            zmenaSmeru(dataPole->hrac1,buffer[0]);
-        }
+        printf("Hrac X zadal smer:%s\n", buffer);
+        zmenaSmeru(dataPole->hrac1,buffer[0]);
     }
     printf("Vlakno pre nacitanie smeru hraca X skoncilo\n");
     pthread_exit(NULL);
