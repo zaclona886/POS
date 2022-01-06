@@ -140,6 +140,22 @@ void posunClankov(HRAC_DATA * hracData, HRACIE_POLE_DATA * hraciePoleData){
         hracData->clanky_hada[hracData->velkostHada-1].poziciaX = predX;
         hracData->clanky_hada[hracData->velkostHada-1].poziciaY = predY;
     }
+    // PREPISANIE HRACEJ PLOCHY
+    for (int i = 0; i < HRACIA_PLOCHA_VELKOST_X; ++i) {
+        for (int j = 0; j < HRACIA_PLOCHA_VELKOST_Y; ++j) {
+            if (hraciePoleData->pole[i][j] != 'H') {
+                hraciePoleData->pole[i][j] = ' ';
+            }
+        }
+    }
+    for (int j = 0; j < hraciePoleData->hrac1->velkostHada; ++j) {
+        hraciePoleData->pole[hraciePoleData->hrac1->clanky_hada[j].poziciaX]
+        [hraciePoleData->hrac1->clanky_hada[j].poziciaY] = 'X';
+    }
+    for (int j = 0; j < hraciePoleData->hrac2->velkostHada; ++j) {
+        hraciePoleData->pole[hraciePoleData->hrac2->clanky_hada[j].poziciaX]
+        [hraciePoleData->hrac2->clanky_hada[j].poziciaY] = 'O';
+    }
 }
 
 void vykreslenieHracejPlochy(HRACIE_POLE_DATA * hraciePoleData){
@@ -238,14 +254,8 @@ void * nacitanieSmeruHracF2(void * data){
     while (!dataPole->hraSkoncila) {
         bzero(buffer,256);
         read(dataPole->hrac2->socket, buffer, 255);
-        if (buffer[0] == 'q'){
-            dataPole->hraSkoncila = true;
-            dataPole->stavHry = 1;
-            printf("Hrac O ukoncil hru\n");
-        } else{
-            printf("Hrac O zadal smer:%s\n", buffer);
-            zmenaSmeru(dataPole->hrac2,buffer[0]);
-        }
+        printf("Hrac O zadal smer:%s\n", buffer);
+        zmenaSmeru(dataPole->hrac2,buffer[0]);
     }
     printf("Vlakno pre nacitanie smeru hraca O skoncilo\n");
     pthread_exit(NULL);
@@ -362,23 +372,15 @@ int main(int argc, char *argv[])
     // ZACIATOK CYKLU
     while (!hraciePoleData.hraSkoncila) {
         //posuvanie hada
-        posunClankov(hraciePoleData.hrac1, &hraciePoleData);
-        posunClankov(hraciePoleData.hrac2, &hraciePoleData);
-        // PREPISANIE HRACEJ PLOCHY
-        for (int i = 0; i < HRACIA_PLOCHA_VELKOST_X; ++i) {
-            for (int j = 0; j < HRACIA_PLOCHA_VELKOST_Y; ++j) {
-                if (hraciePoleData.pole[i][j] != 'H') {
-                    hraciePoleData.pole[i][j] = ' ';
-                }
-            }
+        if (hraciePoleData.stavHry == 0){
+            posunClankov(hraciePoleData.hrac1, &hraciePoleData);
+        } else {
+
         }
-        for (int j = 0; j < hraciePoleData.hrac1->velkostHada; ++j) {
-            hraciePoleData.pole[hraciePoleData.hrac1->clanky_hada[j].poziciaX]
-            [hraciePoleData.hrac1->clanky_hada[j].poziciaY] = 'X';
-        }
-        for (int j = 0; j < hraciePoleData.hrac2->velkostHada; ++j) {
-            hraciePoleData.pole[hraciePoleData.hrac2->clanky_hada[j].poziciaX]
-            [hraciePoleData.hrac2->clanky_hada[j].poziciaY] = 'O';
+        if (hraciePoleData.stavHry == 0){
+            posunClankov(hraciePoleData.hrac2, &hraciePoleData);
+        } else {
+
         }
         //Kontrola ci hra skoncila
         if (!hraciePoleData.hraSkoncila) {
