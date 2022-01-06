@@ -342,6 +342,7 @@ int main(int argc, char *argv[])
         perror("Error writing to socket");
         return 5;
     }
+    sleep(10);
     // VYTVORENIE HRACEJ PLOCHY
     HRACIE_POLE_DATA hraciePoleData;
     hraciePoleData.stavHry = 0;
@@ -404,13 +405,9 @@ int main(int argc, char *argv[])
         //posuvanie hada
         if (hraciePoleData.stavHry == 0){
             posunClankov(hraciePoleData.hrac1, &hraciePoleData);
-        } else {
-
         }
         if (hraciePoleData.stavHry == 0){
             posunClankov(hraciePoleData.hrac2, &hraciePoleData);
-        } else {
-
         }
         //Kontrola ci hra skoncila
         if (!hraciePoleData.hraSkoncila) {

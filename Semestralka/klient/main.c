@@ -29,7 +29,7 @@ void * zadavanieSmeruF(void * data){
         newt = oldt;
         newt.c_lflag &= ~(ICANON);
         tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-        while (c != 'w' && c != 's' && c != 'a' && c != 'd'){
+        while (c != 'w' && c != 's' && c != 'a' && c != 'd' && c != 'q'){
             c=getchar();
         }
         tcsetattr(STDIN_FILENO,TCSANOW,&oldt);
@@ -98,8 +98,8 @@ int main(int argc, char *argv[])
         perror("Error reading from socket");
         return 6;
     }
-    sleep(10);
     printf("%s",buffer);
+    sleep(10);
     // vytvorenie struktury pre klienta
     DATA_KLIENT dataKlient;
     dataKlient.koniec = false;
