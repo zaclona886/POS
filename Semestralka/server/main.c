@@ -224,7 +224,7 @@ void * nacitanieSmeruHracF1(void * data){
     while (!dataPole->hraSkoncila) {
         bzero(buffer,256);
         read(dataPole->hrac1->socket, buffer, 255);
-        printf("Hrac 1 zadal smer:%s\n", buffer);
+        printf("Hrac 1 zadal smer:%s", buffer);
         zmenaSmeru(dataPole->hrac1,buffer[0]);
     }
     printf("Vlakno pre nacitanie smeru hraca1 skoncilo\n");
@@ -238,7 +238,7 @@ void * nacitanieSmeruHracF2(void * data){
     while (!dataPole->hraSkoncila) {
         bzero(buffer,256);
         read(dataPole->hrac2->socket, buffer, 255);
-        printf("Hrac 2 zadal smer:%s\n", buffer);
+        printf("Hrac 2 zadal smer:%s", buffer);
         zmenaSmeru(dataPole->hrac2,buffer[0]);
     }
     printf("Vlakno pre nacitanie smeru hraca2 skoncilo\n");
@@ -342,8 +342,6 @@ int main(int argc, char *argv[])
         hraciePoleData.pole[hrac2.clanky_hada[j].poziciaX]
         [hrac2.clanky_hada[j].poziciaY] = 'O';
     }
-
-    vykreslenieHracejPlochy(&hraciePoleData);
     //Pridanie hracov do hracej plochy
     hraciePoleData.hrac1 = &hrac1;
     hraciePoleData.hrac2 = &hrac2;
@@ -404,7 +402,6 @@ int main(int argc, char *argv[])
                 perror("Error writing to socket");
                 return 5;
             }
-            vykreslenieHracejPlochy(&hraciePoleData);
         } else {
             bzero(buffer,256);
             buffer[0] = 't';

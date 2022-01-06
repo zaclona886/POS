@@ -26,13 +26,6 @@ void * zadavanieSmeruF(void * data){
         char smer = ' ';
         bzero(buffer, 256);
         fgets(buffer, 255, stdin);
-        if (buffer[0] != ' ') {
-            printf("Hrac zadal: %s\n",buffer);
-        }
-        if (buffer[0] == 'q') {
-            dataKlient->koniec = true;
-            printf("Koniec hry!\n");
-        }
         write(dataKlient->socket, buffer, 255);
     }
     printf("Skoncilo sa vlakno pre zadavanie smeru\n");
@@ -81,6 +74,8 @@ int main(int argc, char *argv[])
         perror("Error connecting to socket");
         return 4;
     }
+    //cakanie na spustenie hry
+
 
     // vytvorenie struktury pre klienta
     DATA_KLIENT dataKlient;
