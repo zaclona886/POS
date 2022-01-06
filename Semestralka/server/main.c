@@ -219,29 +219,41 @@ void zmenaSmeru(HRAC_DATA * pHrac, char smer) {
 
 void * nacitanieSmeruHracF1(void * data){
     HRACIE_POLE_DATA * dataPole = data;
-    printf("Vlakno pre nacitanie smeru hraca1 zacalo\n");
+    printf("Vlakno pre nacitanie smeru hraca X zacalo\n");
     char buffer[256];
     while (!dataPole->hraSkoncila) {
         bzero(buffer,256);
         read(dataPole->hrac1->socket, buffer, 255);
-        printf("Hrac 1 zadal smer:%s", buffer);
-        zmenaSmeru(dataPole->hrac1,buffer[0]);
+        if (buffer[0] == 'q'){
+            dataPole->hraSkoncila = true;
+            dataPole->stavHry = 2;
+            printf("Hrac X ukoncil hru\n");
+        } else{
+            printf("Hrac X zadal smer:%s\n", buffer);
+            zmenaSmeru(dataPole->hrac1,buffer[0]);
+        }
     }
-    printf("Vlakno pre nacitanie smeru hraca1 skoncilo\n");
+    printf("Vlakno pre nacitanie smeru hraca X skoncilo\n");
     pthread_exit(NULL);
 }
 
 void * nacitanieSmeruHracF2(void * data){
     HRACIE_POLE_DATA * dataPole = data;
-    printf("Vlakno pre nacitanie smeru hraca2 zacalo\n");
+    printf("Vlakno pre nacitanie smeru hraca O zacalo\n");
     char buffer[256];
     while (!dataPole->hraSkoncila) {
         bzero(buffer,256);
         read(dataPole->hrac2->socket, buffer, 255);
-        printf("Hrac 2 zadal smer:%s", buffer);
-        zmenaSmeru(dataPole->hrac2,buffer[0]);
+        if (buffer[0] == 'q'){
+            dataPole->hraSkoncila = true;
+            dataPole->stavHry = 1;
+            printf("Hrac O ukoncil hru\n");
+        } else{
+            printf("Hrac O zadal smer:%s\n", buffer);
+            zmenaSmeru(dataPole->hrac2,buffer[0]);
+        }
     }
-    printf("Vlakno pre nacitanie smeru hraca2 skoncilo\n");
+    printf("Vlakno pre nacitanie smeru hraca O skoncilo\n");
     pthread_exit(NULL);
 }
 
@@ -286,7 +298,7 @@ int main(int argc, char *argv[])
         perror("ERROR on accept");
         return 3;
     }
-    printf("Hrac1 sa napojil, caka sa na napojenie druheho hraca\n");
+    printf("Hrac X sa napojil, caka sa na napojenie druheho hraca\n");
     //Hrac2
     newsockfd2 = accept(sockfd, (struct sockaddr*)&cli_addr, &cli_len);
     if (newsockfd < 0)
@@ -294,7 +306,7 @@ int main(int argc, char *argv[])
         perror("ERROR on accept");
         return 3;
     }
-    printf("Hrac2 sa napojil hra zacala\n");
+    printf("Hrac O sa napojil hra zacala\n");
 
     // VYTVORENIE HRACEJ PLOCHY
     HRACIE_POLE_DATA hraciePoleData;
@@ -374,7 +386,7 @@ int main(int argc, char *argv[])
             hraciePoleData.pole[hraciePoleData.hrac2->clanky_hada[j].poziciaX]
             [hraciePoleData.hrac2->clanky_hada[j].poziciaY] = 'O';
         }
-        //Posun hada
+        //Kontrola ci hra skoncila
         if (!hraciePoleData.hraSkoncila) {
             bzero(buffer,256);
             buffer[0] = 'f';
@@ -418,13 +430,13 @@ int main(int argc, char *argv[])
                 return 5;
             }
         }
-        usleep(250000);
+        usleep(125000);
         //sleep(5);
     }
     // VYHODNOTENIE HRY
     if ( hraciePoleData.stavHry == 1) {
         bzero(buffer,256);
-        sprintf(buffer,"Vyhral 1.hrac!\nDlzka hada 1.hraca:%d\nDlzka hada 2.hraca:%d",hrac1.velkostHada,hrac2.velkostHada);
+        sprintf(buffer,"Vyhral hrac X!\nDlzka hada hraca X:%d\nDlzka hada hraca O:%d\nPre skoncenie hry stlacte q\n",hrac1.velkostHada,hrac2.velkostHada);
         n = write(newsockfd,buffer, 255);
         if (n < 0)
         {
@@ -440,7 +452,7 @@ int main(int argc, char *argv[])
     }
     if ( hraciePoleData.stavHry == 2) {
         bzero(buffer,256);
-        sprintf(buffer,"Vyhral 2.hrac!\nDlzka hada 1.hraca:%d\nDlzka hada 2.hraca:%d",hrac1.velkostHada,hrac2.velkostHada);
+        sprintf(buffer,"Vyhral hrac O!\nDlzka hada hraca X:%d\nDlzka hada hraca O:%d\nPre skoncenie hry stlacte q\n",hrac1.velkostHada,hrac2.velkostHada);
         n = write(newsockfd,buffer, 255);
         if (n < 0)
         {
@@ -457,7 +469,7 @@ int main(int argc, char *argv[])
 
     if ( hraciePoleData.stavHry == 3) {
         bzero(buffer,256);
-        sprintf(buffer,"Nevyhral nikto, remiza!\nDlzka hada 1.hraca:%d.\nDlzka hada 2.hraca:%d.",hrac1.velkostHada,hrac2.velkostHada);
+        sprintf(buffer,"Nevyhral nikto, remiza!\nDlzka hada hraca X:%d\nDlzka hada hraca O:%d\nPre skoncenie hry stlacte q\n",hrac1.velkostHada,hrac2.velkostHada);
         n = write(newsockfd,buffer, 255);
         if (n < 0)
         {

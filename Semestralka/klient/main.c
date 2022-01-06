@@ -30,13 +30,14 @@ void * zadavanieSmeruF(void * data){
         newt = oldt;
         newt.c_lflag &= ~(ICANON);
         tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-        while (c != 'w' && c != 's' && c != 'a' && c != 'd'){
+        while (c != 'w' && c != 's' && c != 'a' && c != 'd' && c != 'q'){
             c=getchar();
         }
         tcsetattr(STDIN_FILENO,TCSANOW,&oldt);
         bzero(buffer, 256);
         buffer[0] = c;
         write(dataKlient->socket, buffer, 255);
+        usleep(125000);
     }
     printf("Skoncilo sa vlakno pre zadavanie smeru\n");
     pthread_exit(NULL);
