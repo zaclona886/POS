@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <pthread.h>
+#include <termios.h>
 
 #define HRACIA_PLOCHA_VELKOST_X 25
 #define HRACIA_PLOCHA_VELKOST_Y 60
@@ -23,9 +24,17 @@ void * zadavanieSmeruF(void * data){
     int n;
     char buffer[256];
     while (!dataKlient->koniec) {
-        char smer = ' ';
+        int c;
+        static struct termios oldt,newt;
+        tcgetattr(STDIN_FILENO,&oldt);
+        newt = oldt;
+        newt.c_lflag &= ~(ICANON);
+        tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+        while ((c=getchar()) != 'w')
+            putchar(c);
+        tcsetattr(STDIN_FILENO,TCSANOW,&oldt);
         bzero(buffer, 256);
-        fgets(buffer, 255, stdin);
+        buffer[0] = c;
         write(dataKlient->socket, buffer, 255);
     }
     printf("Skoncilo sa vlakno pre zadavanie smeru\n");
