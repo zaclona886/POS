@@ -24,14 +24,15 @@ void * zadavanieSmeruF(void * data){
     int n;
     char buffer[256];
     while (!dataKlient->koniec) {
-        int c;
+        int c = 0;
         static struct termios oldt,newt;
         tcgetattr(STDIN_FILENO,&oldt);
         newt = oldt;
         newt.c_lflag &= ~(ICANON);
         tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-        while ((c=getchar()) != 'w')
-            putchar(c);
+        while (c != 'w' && c != 's' && c != 'a' && c != 'd'){
+            c=getchar();
+        }
         tcsetattr(STDIN_FILENO,TCSANOW,&oldt);
         bzero(buffer, 256);
         buffer[0] = c;
