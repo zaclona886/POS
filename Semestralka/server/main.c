@@ -185,7 +185,7 @@ void * generovanieHribovF(void * hraciePole){
     HRACIE_POLE_DATA * dataP = hraciePole;
     printf("Zacalo sa generovanie kolacov\n");
     while (!dataP->hraSkoncila){
-        sleep(5);
+        sleep(3);
         bool vygeneroval = false;
         pthread_mutex_lock(dataP->mutexPocetHribov);
         while (dataP->pocetHribov >= MAX_POCET_HRIBOV){
@@ -303,6 +303,14 @@ int main(int argc, char *argv[])
         return 3;
     }
     printf("Hrac X sa napojil, caka sa na napojenie druheho hraca\n");
+    bzero(buffer,256);
+    sprintf(buffer,"Tvoj had je X, pockaj kym sa napoji hrac O\n");
+    n = write(newsockfd,buffer, 255);
+    if (n < 0)
+    {
+        perror("Error writing to socket");
+        return 5;
+    }
     //Hrac2
     newsockfd2 = accept(sockfd, (struct sockaddr*)&cli_addr, &cli_len);
     if (newsockfd < 0)
@@ -311,7 +319,29 @@ int main(int argc, char *argv[])
         return 3;
     }
     printf("Hrac O sa napojil hra zacala\n");
-
+    bzero(buffer,256);
+    sprintf(buffer,"Tvoj had je O\n");
+    n = write(newsockfd2,buffer, 255);
+    if (n < 0)
+    {
+        perror("Error writing to socket");
+        return 5;
+    }
+    //Poslenie info o zacati hry
+    bzero(buffer,256);
+    sprintf(buffer,"Hra zacne o 10 sekund, priprav sa!\n");
+    n = write(newsockfd,buffer, 255);
+    if (n < 0)
+    {
+        perror("Error writing to socket");
+        return 5;
+    }
+    n = write(newsockfd2,buffer, 255);
+    if (n < 0)
+    {
+        perror("Error writing to socket");
+        return 5;
+    }
     // VYTVORENIE HRACEJ PLOCHY
     HRACIE_POLE_DATA hraciePoleData;
     hraciePoleData.stavHry = 0;

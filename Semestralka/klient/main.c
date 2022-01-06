@@ -20,7 +20,6 @@ typedef struct klient{
 
 void * zadavanieSmeruF(void * data){
     DATA_KLIENT * dataKlient = data;
-    printf("Zacalo sa vlakno pre zadavanie smeru\n");
     int n;
     char buffer[256];
     while (!dataKlient->koniec) {
@@ -40,7 +39,6 @@ void * zadavanieSmeruF(void * data){
         write(dataKlient->socket, buffer, 255);
         usleep(125000);
     }
-    printf("Skoncilo sa vlakno pre zadavanie smeru\n");
     pthread_exit(NULL);
 }
 
@@ -87,8 +85,21 @@ int main(int argc, char *argv[])
         return 4;
     }
     //cakanie na spustenie hry
-
-
+    bzero(buffer,256);
+    n = read(sockfd,buffer,255);
+    if (n < 0) {
+        perror("Error reading from socket");
+        return 6;
+    }
+    printf("%s",buffer);
+    bzero(buffer,256);
+    n = read(sockfd,buffer,255);
+    if (n < 0) {
+        perror("Error reading from socket");
+        return 6;
+    }
+    sleep(10);
+    printf("%s",buffer);
     // vytvorenie struktury pre klienta
     DATA_KLIENT dataKlient;
     dataKlient.koniec = false;
