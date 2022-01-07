@@ -158,29 +158,6 @@ void posunClankov(HRAC_DATA * hracData, HRACIE_POLE_DATA * hraciePoleData){
     }
 }
 
-void vykreslenieHracejPlochy(HRACIE_POLE_DATA * hraciePoleData){
-    for (int j = 0; j < HRACIA_PLOCHA_VELKOST_Y + 2; ++j) {
-        printf("-");
-    }
-    printf("\n");
-    for (int i = 0; i < HRACIA_PLOCHA_VELKOST_X; ++i) {
-        for (int j = 0; j < HRACIA_PLOCHA_VELKOST_Y; ++j) {
-            if (j == 0 ) {
-                printf("|");
-            }
-            printf("%c",(*hraciePoleData).pole[i][j]);
-            if (j == HRACIA_PLOCHA_VELKOST_Y - 1 ) {
-                printf("|");
-            }
-        }
-        printf("\n");
-    }
-    for (int j = 0; j < HRACIA_PLOCHA_VELKOST_Y + 2; ++j) {
-        printf("-");
-    }
-    printf("\n");
-}
-
 void * generovanieHribovF(void * hraciePole){
     HRACIE_POLE_DATA * dataP = hraciePole;
     printf("Zacalo sa generovanie kolacov\n");
