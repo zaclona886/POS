@@ -29,8 +29,11 @@ void * zadavanieSmeruF(void * data){
         newt = oldt;
         newt.c_lflag &= ~(ICANON);
         tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-        while (c != 'w' && c != 's' && c != 'a' && c != 'd' && c != 'q'){
+        while (c != 'w' && c != 's' && c != 'a' && c != 'd' && c != 'q' ){
             c=getchar();
+            if (dataKlient->koniec) {
+                pthread_exit(NULL);
+            }
         }
         tcsetattr(STDIN_FILENO,TCSANOW,&oldt);
         bzero(buffer, 256);
