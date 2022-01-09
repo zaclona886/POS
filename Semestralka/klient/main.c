@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
         perror("Error reading from socket");
         return 6;
     }
-    printf("%s\n",buffer);
+    printf("%s",buffer);
 
     pthread_join(vlaknoZadavanieSmeru,NULL);
     close(sockfd);
